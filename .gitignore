@@ -1,18 +1,15 @@
-# http://www.gnu.org/software/automake
+OpenPlatformPkg
+arm-tc53
+arm-trusted-firmware
+arm64-tc53
+edk2
+l-loader
+optee_os
+uefi-tools
+53_path.sh
+export_paths.sh
+gcc-linaro-5.3-2016.02-x86_64_aarch64-linux-gnu.tar.xz
+gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf.tar.xz
+grubaa64.efi
+hikey-boot-linux-VERSION.uefi.img
 
-Makefile.in
-
-# http://www.gnu.org/software/autoconf
-
-/autom4te.cache
-/autoscan.log
-/autoscan-*.log
-/aclocal.m4
-/compile
-/config.h.in
-/configure
-/configure.scan
-/depcomp
-/install-sh
-/missing
-/stamp-h1
