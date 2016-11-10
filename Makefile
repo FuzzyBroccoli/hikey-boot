@@ -1,13 +1,16 @@
 default: all
 
 .PHONY: all
-all: clone tools uefi l-loader/ptable.img boot.img
+all: clone tools fib.bin ptable-linux-8g.img l-loader.bin boot.img
 	echo Original instructions were found in https://github.com/Linaro/documentation/blob/master/Reference-Platform/RPOfficial/ConsumerEdition/HiKey/BuildSourceBL.md
 	echo All done.
 
+testi: ./arm-trusted-firmware/build/hikey/release/fip.bin
+	echo testi
 
 .PHONY: clone
-clone: edk2 OpenPlatformPkg arm-trusted-firmware l-loader uefi-tools optee_os
+CLONE = edk2 OpenPlatformPkg arm-trusted-firmware l-loader uefi-tools optee_os export_paths.sh
+clone: $(CLONE)
 	echo Clone done.
 
 
@@ -38,7 +41,8 @@ export_paths.sh:
 
 
 .PHONY: tools
-tools: arm-tc53 arm64-tc53 53_path.sh
+TOOLS = arm-tc53 arm64-tc53 53_path.sh
+tools: $(TOOLS)
 	set -e; \
 	. ./53_path.sh; \
 	echo On call: ${PATH};\
@@ -64,33 +68,42 @@ arm64-tc53: gcc-linaro-5.3-2016.02-x86_64_aarch64-linux-gnu.tar.xz
 53_path.sh:
 	echo PATH="${PWD}/arm-tc53/bin:${PWD}/arm64-tc53/bin:${PATH}" > 53_path.sh
 
+#Uefi aka fib.bin
+fib.bin: arm-trusted-firmware/build/hikey/release/fip.bin
+	cp ./arm-trusted-firmware/build/hikey/release/fip.bin ./
 
-uefi: clone tools build_uefi.sh export_paths.sh
+#Package of BL2, BL3-0, BL3-1, BL3-2 and BL3-3
+./arm-trusted-firmware/build/hikey/release/fip.bin: $(CLONE) $(TOOLS) build_uefi.sh
 	set -e; \
 	. ./53_path.sh; \
 	. ./export_paths.sh; \
 	echo building BL1,2,3 ;\
-	./build_uefi.sh
-
-#Package of BL2, BL3-0, BL3-1, BL3-2 and BL3-3
-arm-trusted-firmware/build/hikey/release/fip.bin: uefi
+	./build_uefi.sh ;\
 	echo ./arm-trusted-firmware/build/hikey/release/fip.bin build done.
-.PHONY: fib.bin
-fib.bin: arm-trusted-firmware/build/hikey/release/fip.bin
 
 
-l-loader/ptable.img: l-loader tools build_ptable.sh export_paths.sh
+
+l-loader/l-loader.bin: l-loader $(TOOLS) fib.bin export_paths.sh build_ptable.sh
 	set -e; \
 	. ./53_path.sh; \
 	. ./export_paths.sh; \
 	echo building ptable.img and l-loader.bin ;\
 	./build_ptable.sh 
 
-l-loader/l-loader.bin: l-loader/ptable.img
+l-loader/ptable.img: l-loader/l-loader.bin
+
+l-loader.bin: l-loader/l-loader.bin
+	cp l-loader/l-loader.bin ./
+
+ptable-linux-8g.img: l-loader/l-loader.bin
+	cp l-loader/ptable-linux-8g.img ./
+
 .PHONY: ptable.img
-ptable.img: l-loader/ptable.img
-.PHONY: l-loader.bin
-l-loader.bin: l-loader/ptable.img
+ptable.img: ptable-linux-8g.img
+
+
+
+edk2/Build/HiKey/RELEASE_GCC49/AARCH64/AndroidFastbootApp.efi: fib.bin
 
 boot.img: edk2/Build/HiKey/RELEASE_GCC49/AARCH64/AndroidFastbootApp.efi 53_path.sh export_paths.sh
 	set -e; \
@@ -102,7 +115,11 @@ boot.img: edk2/Build/HiKey/RELEASE_GCC49/AARCH64/AndroidFastbootApp.efi 53_path.
 
 .PHONY: help
 help:
-	echo wand.image:
-	echo   sudo apt-get install libmagickwand-dev imagemagick python-pip
-	echo   sudo pip install Wand
+	#wand.image:
+	# sudo apt-get install libmagickwand-dev imagemagick python-pip
+	# sudo pip install Wand
+
+
+
+
 
