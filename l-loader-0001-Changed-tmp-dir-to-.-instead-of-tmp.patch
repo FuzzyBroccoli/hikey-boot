@@ -1,0 +1,27 @@
+From 475a4c2d0ba281d3f1f19d3888a1db61dae6be3b Mon Sep 17 00:00:00 2001
+From: Mikko Koivunen <mikko.koivunen@fi.rohmeurope.com>
+Date: Thu, 10 Nov 2016 07:20:39 +0100
+Subject: [PATCH] Changed tmp-dir to ./ instead of /tmp/
+
+Using of /tmp/ caused build to fail (on 8G dd) on system where
+build disk has much more space than /tmp/
+---
+ generate_ptable.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/generate_ptable.sh b/generate_ptable.sh
+index 3bc232e..871a2a9 100755
+--- a/generate_ptable.sh
++++ b/generate_ptable.sh
+@@ -7,7 +7,7 @@
+ 
+ PTABLE=${PTABLE:-aosp}
+ SECTOR_SIZE=512
+-TEMP_FILE=$(mktemp /tmp/${PTABLE}.XXXXXX)
++TEMP_FILE=$(mktemp ./${PTABLE}.XXXXXX)
+ 
+ case ${PTABLE} in
+   tiny)
+-- 
+1.9.1
+
